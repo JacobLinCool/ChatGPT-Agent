@@ -185,6 +185,12 @@ export class Agent extends BaseModule implements Module {
 
         let done = false;
 
+        try {
+            await chan.sendTyping();
+        } catch {
+            done = true;
+        }
+
         const typing = setInterval(async () => {
             if (done) {
                 clearInterval(typing);
