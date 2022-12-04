@@ -1,5 +1,5 @@
 import { BaseModule, CallNextModule, Module, StoreContext } from "pure-cat";
-import { ClientEvents, GatewayIntentBits, Message } from "discord.js";
+import { ChannelType, ClientEvents, GatewayIntentBits, Message } from "discord.js";
 import decode from "jwt-decode";
 import { PRESET } from "./preset";
 import { talk } from "./agent";
@@ -181,9 +181,22 @@ export class Agent extends BaseModule implements Module {
             return;
         }
 
-        await chan.sendTyping();
-
         data.prev += message.content + "\n\n";
+
+        let done = false;
+
+        const typing = setInterval(async () => {
+            if (done) {
+                clearInterval(typing);
+            } else {
+                try {
+                    await chan.sendTyping();
+                } catch {
+                    clearInterval(typing);
+                }
+            }
+        }, 5000);
+
         await talk(
             data["openai-token"],
             data.prev,
@@ -192,6 +205,7 @@ export class Agent extends BaseModule implements Module {
                     console.error(e);
                 });
                 data.parent = parent;
+                done = true;
             },
             data.conversation,
             data.parent,
