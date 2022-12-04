@@ -1,0 +1,10 @@
+{
+    "name": "Bot",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "settings": {},
+    "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "GitHub.copilot"],
+    "postCreateCommand": ["pnpm", "i"],
+    "remoteUser": "node"
+}
