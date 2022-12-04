@@ -6,7 +6,10 @@ This gives a way to use [ChatGPT](https://chat.openai.com/chat) in Discord.
 
 1. Create a Discord bot from the [Discord Developer Portal](https://discord.com/developers/applications).
 2. Setup the `.env` file with the bot token and the application ID.
-3. Run `docker compose up -d` to start the bot.
+3. Register the slash commands. (`pnpm register`)
+4. Start the bot. (`pnpm start`)
+
+> Step 4 can be replaced with `docker compose up -d` if you want to use Docker.
 
 ## Usage
 
