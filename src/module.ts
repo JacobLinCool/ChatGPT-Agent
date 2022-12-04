@@ -1,5 +1,5 @@
 import { BaseModule, CallNextModule, Module, StoreContext } from "pure-cat";
-import { ChannelType, ClientEvents, GatewayIntentBits, Message } from "discord.js";
+import { ClientEvents, GatewayIntentBits, Message } from "discord.js";
 import decode from "jwt-decode";
 import { PRESET } from "./preset";
 import { talk } from "./agent";
@@ -107,9 +107,9 @@ export class Agent extends BaseModule implements Module {
                     data.prev = "";
                     data.parent = undefined;
                     for (const preload of preloads) {
-                        data.prev += preload + "\n\n";
                         await talk(
                             data["openai-token"],
+                            preload,
                             data.prev,
                             (conv, parent) => {
                                 data.conversation = conv;
@@ -118,6 +118,7 @@ export class Agent extends BaseModule implements Module {
                             data.conversation,
                             data.parent,
                         );
+                        data.prev += preload + "\n\n";
                     }
 
                     await interaction.editReply({
@@ -181,8 +182,6 @@ export class Agent extends BaseModule implements Module {
             return;
         }
 
-        data.prev += message.content + "\n\n";
-
         let done = false;
 
         try {
@@ -205,6 +204,7 @@ export class Agent extends BaseModule implements Module {
 
         await talk(
             data["openai-token"],
+            message.content,
             data.prev,
             (id, parent, text) => {
                 message.reply(text).catch((e) => {
@@ -216,5 +216,7 @@ export class Agent extends BaseModule implements Module {
             data.conversation,
             data.parent,
         );
+
+        data.prev += message.content + "\n\n";
     }
 }

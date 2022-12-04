@@ -30,12 +30,13 @@ export async function mod(
 export async function talk(
     token: string,
     content: string,
+    prev_content: string,
     reolve: (conversation_id: string, message_id: string, response: string) => void,
     conversation_id?: string,
     parent_id?: string,
 ): Promise<void> {
     console.log(conversation_id);
-    await mod(token, content)
+    await mod(token, prev_content + content)
         .then((data) => {
             console.log(data);
         })
