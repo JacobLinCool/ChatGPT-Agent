@@ -59,3 +59,17 @@ export async function converse(
 
     return res.body;
 }
+
+export async function refresh(refresh_token: string): Promise<string | undefined> {
+    const res = await fetch("https://chat.openai.com/api/auth/session", {
+        headers: {
+            ...headers(""),
+            authorization: "",
+            cookie: `__Secure-next-auth.session-token=${refresh_token}`,
+        },
+    });
+    log("sent refresh request", res.status);
+
+    const data = await res.json();
+    return data?.accessToken;
+}
