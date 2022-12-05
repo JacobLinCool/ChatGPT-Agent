@@ -1,6 +1,7 @@
 import EventEmitter from "node:events";
 import type { Session } from "./session";
 import { moderate, converse } from "./request";
+import { log } from "./debug";
 
 export class Conversation extends EventEmitter {
     public response: Promise<string>;
@@ -12,6 +13,7 @@ export class Conversation extends EventEmitter {
 
     public async run(): Promise<string> {
         const result = await Promise.all([this.moderate(), this.converse()]);
+        log("Conversation Result", result);
         return result[1];
     }
 
@@ -44,6 +46,7 @@ export class Conversation extends EventEmitter {
                 const split = data.indexOf("\n\n");
                 if (split !== -1) {
                     const part = data.slice(0, split).replace(/^data: /, "");
+                    log("Partially Received", part);
                     if (part.startsWith("[DONE]")) {
                         return;
                     }
@@ -59,6 +62,7 @@ export class Conversation extends EventEmitter {
             });
             stream.on("end", () => {
                 const response = last?.message.content.parts.join("\n");
+                log("Received", response);
                 this.session.history.push({
                     id: last?.message.id,
                     author: "assistant",

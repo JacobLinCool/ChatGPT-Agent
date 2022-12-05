@@ -22,9 +22,11 @@
         "docs": "typedoc --out docs src"
     },
     "dependencies": {
+        "debug": "^4.3.4",
         "node-fetch": "^2.6.7"
     },
     "devDependencies": {
+        "@types/debug": "^4.1.7",
         "@types/node": "^18.11.10",
         "@types/node-fetch": "^2.6.2",
         "dotenv": "^16.0.3",

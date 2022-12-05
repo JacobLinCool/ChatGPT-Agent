@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import fetch from "node-fetch";
+import { log } from "./debug";
 
 export function headers(token: string): Record<string, string> {
     return {
@@ -21,6 +22,7 @@ export async function moderate(
         }),
         method: "POST",
     });
+    log("sent moderation request", result.status);
 
     const data = await result.json();
     return data;
@@ -53,6 +55,7 @@ export async function converse(
         }),
         method: "POST",
     });
+    log("sent conversation request", res.status);
 
     return res.body;
 }

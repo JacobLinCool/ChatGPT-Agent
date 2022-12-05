@@ -28,16 +28,20 @@ importers:
 
   packages/chatgpt-agent:
     specifiers:
+      '@types/debug': ^4.1.7
       '@types/node': ^18.11.10
       '@types/node-fetch': ^2.6.2
+      debug: ^4.3.4
       dotenv: ^16.0.3
       node-fetch: ^2.6.7
       tsup: ^6.5.0
       typedoc: ^0.23.21
       typescript: ^4.9.3
     dependencies:
+      debug: 4.3.4
       node-fetch: 2.6.7
     devDependencies:
+      '@types/debug': 4.1.7
       '@types/node': 18.11.10
       '@types/node-fetch': 2.6.2
       dotenv: 16.0.3
@@ -917,6 +921,12 @@ packages:
       '@babel/types': 7.20.5
     dev: true
 
+  /@types/debug/4.1.7:
+    resolution: {integrity: sha512-9AonUzyTjXXhEOa0DnqpzZi6VHlqKMswga9EXjpXnnqxwLtdvPPtlO8evrI5D9S6asFRCQ6v+wpiUKbw+vKqyg==}
+    dependencies:
+      '@types/ms': 0.7.31
+    dev: true
+
   /@types/eventsource/1.1.10:
     resolution: {integrity: sha512-rYzRmJSnm44Xb7FICRXEjwe/26ZiiS+VMGmuD17PevMP56cGgLEsaM955sYQW0S+K7h+mPOL70vGf1hi4WDjVA==}
     dev: true
@@ -952,6 +962,10 @@ packages:
 
   /@types/json-schema/7.0.11:
     resolution: {integrity: sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==}
+    dev: true
+
+  /@types/ms/0.7.31:
+    resolution: {integrity: sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==}
     dev: true
 
   /@types/node-fetch/2.6.2:
