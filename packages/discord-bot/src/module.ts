@@ -272,7 +272,11 @@ export class AgentModule extends BaseModule implements Module {
         let msg = "";
         let bondary = Date.now() + 2000;
 
-        const update = async (partial: string) => {
+        const update = async (partial?: string) => {
+            if (!partial) {
+                return;
+            }
+
             msg = partial;
 
             if (msg.length === 0) {
