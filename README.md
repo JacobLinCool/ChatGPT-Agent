@@ -2,21 +2,10 @@
 
 This is a library, a CLI, and a Discord bot for the unofficial [ChatGPT](https://chat.openai.com/chat) API with progressive responses and more.
 
-## Setup
+You can find READMEs for the library, CLI, and Discord bot in their respective folders in `packages/`.
 
-1. Create a Discord bot from the [Discord Developer Portal](https://discord.com/developers/applications).
-2. Setup the `.env` file with the bot token and the application ID.
-3. Register the slash commands. (`pnpm register`)
-4. Start the bot. (`pnpm start`)
+The library documentation is available at [https://jacoblincool.github.io/ChatGPT-Agent/](https://jacoblincool.github.io/ChatGPT-Agent/).
 
-> Step 4 can be replaced with `docker compose up -d` if you want to use Docker.
+And you can invite the Discord bot to your server with [this link](https://discord.com/oauth2/authorize?client_id=1049030945832972389&permissions=274877975552&scope=bot).
 
-## Usage
-
-Every user needs to auth (`/auth <token>`) the bot with their own JWT before using it.
-
-Then, they can start a conversation with the bot by using `/start [preset]`.
-
-After the bot sets up the conversation with the preset, the user can simply type messages to continue the conversation.
-
-After the conversation is done, the user can use `/stop` to end the conversation.
+The CLI is available on [npm](https://www.npmjs.com/package/chatgpt-cli).
