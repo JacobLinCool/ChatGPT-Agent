@@ -1,0 +1,43 @@
+{
+    "name": "chatgpt-agent",
+    "version": "1.0.0",
+    "description": "Client for the unofficial ChatGPT API with progressive responses and more.",
+    "keywords": [
+        "ChatGPT",
+        "OpenAI",
+        "GPT",
+        "AI",
+        "NLP"
+    ],
+    "author": "JacobLinCool <jacoblincool@gmail.com> (https://github.com/JacobLinCool)",
+    "license": "MIT",
+    "main": "lib/index.js",
+    "module": "lib/index.mjs",
+    "types": "lib/index.d.ts",
+    "files": [
+        "lib"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "docs": "typedoc --out docs src"
+    },
+    "dependencies": {
+        "node-fetch": "^2.6.7"
+    },
+    "devDependencies": {
+        "@types/node": "^18.11.10",
+        "@types/node-fetch": "^2.6.2",
+        "dotenv": "^16.0.3",
+        "tsup": "^6.5.0",
+        "typedoc": "^0.23.21",
+        "typescript": "^4.9.3"
+    },
+    "homepage": "https://github.com/JacobLinCool/ChatGPT-Agent",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/JacobLinCool/ChatGPT-Agent.git"
+    },
+    "bugs": {
+        "url": "https://github.com/JacobLinCool/ChatGPT-Agent/issues"
+    }
+}

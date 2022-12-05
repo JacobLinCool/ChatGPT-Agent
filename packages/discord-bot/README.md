@@ -1,6 +1,4 @@
-# ChatGPT Agent
-
-This is a library, a CLI, and a Discord bot for the unofficial [ChatGPT](https://chat.openai.com/chat) API with progressive responses and more.
+# ChatGPT Bot
 
 ## Setup
 

@@ -4,6 +4,7 @@ services:
   bot:
     build:
       context: .
+      dockerfile: Dockerfile
       target: runner
     image: jacoblincool/chatgpt-agent
     container_name: chatgpt-agent
@@ -11,4 +12,4 @@ services:
     env_file:
       - .env
     volumes:
-      - ./store:/app/.store
+      - ./.store:/app/.store

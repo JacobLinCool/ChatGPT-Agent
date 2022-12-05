@@ -130,3 +130,5 @@ dist
 .pnpm-store/
 data/
 .store/
+lib/
+docs/

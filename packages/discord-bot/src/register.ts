@@ -19,6 +19,12 @@ const commands = [
     new SlashCommandBuilder()
         .setName("stop")
         .setDescription("Stop the current conversation with the bot"),
+    new SlashCommandBuilder()
+        .setName("public")
+        .setDescription("Make the your conversation public in the channel"),
+    new SlashCommandBuilder()
+        .setName("private")
+        .setDescription("Revoke the public access in the channel"),
 ].map((command) => command.toJSON());
 
 (async () => {

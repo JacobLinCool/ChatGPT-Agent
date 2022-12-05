@@ -5,11 +5,12 @@ RUN npm i -g pnpm
 COPY . .
 RUN pnpm i
 RUN pnpm build
-RUN pnpm prune --prod && pnpm store prune
+RUN rm -rf node_modules
+RUN pnpm i --prod && pnpm store prune
 
 FROM node:alpine as runner
 
 WORKDIR /app
 COPY --from=builder /app .
 
-ENTRYPOINT ["node", "dist/index.js"]
+ENTRYPOINT ["node", "packages/discord-bot/dist/index.js"]
