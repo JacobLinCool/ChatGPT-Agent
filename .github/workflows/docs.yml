@@ -33,7 +33,7 @@ jobs:
           version: latest
 
       - name: Build Docs
-        run: pnpm i && pnpm -r run docs
+        run: pnpm i && pnpm build && pnpm -r run docs
 
       - name: Setup Pages
         uses: actions/configure-pages@v1
