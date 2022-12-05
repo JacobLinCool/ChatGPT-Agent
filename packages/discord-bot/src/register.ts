@@ -5,8 +5,9 @@ const commands = [
     new SlashCommandBuilder()
         .setName("auth")
         .setDescription("Auth with JWT, the token will be stored in the bot")
-        .addStringOption((option) =>
-            option.setName("token").setDescription("JWT token").setRequired(true),
+        .addStringOption((option) => option.setName("token").setDescription("Refresh token"))
+        .addAttachmentOption((option) =>
+            option.setName("file").setDescription("A file containing the refresh token"),
         ),
     new SlashCommandBuilder()
         .setName("revoke")

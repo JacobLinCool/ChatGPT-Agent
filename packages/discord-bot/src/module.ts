@@ -1,7 +1,7 @@
 import { BaseModule, CallNextModule, Module, StoreContext } from "pure-cat";
 import { ClientEvents, GatewayIntentBits, Message } from "discord.js";
 import decode from "jwt-decode";
-import { Agent, Session } from "chatgpt-agent";
+import { Agent, refresh, Session } from "chatgpt-agent";
 import { PRESET } from "./preset";
 
 export class AgentModule extends BaseModule implements Module {
@@ -26,9 +26,36 @@ export class AgentModule extends BaseModule implements Module {
         if (interaction.isChatInputCommand()) {
             switch (interaction.commandName) {
                 case "auth": {
-                    const token = interaction.options.getString("token", true);
+                    const raw = interaction.options.getString("token");
+                    const file = interaction.options.getAttachment("file");
 
                     await interaction.reply({ ephemeral: true, content: "Authenticating ..." });
+
+                    const token = raw
+                        ? raw
+                        : file
+                        ? await fetch(file.url).then((res) => res.text())
+                        : undefined;
+
+                    if (!token) {
+                        await interaction.editReply(":x: You need to provide a token");
+                        return;
+                    }
+
+                    const is_refresh_token = token.includes("..");
+                    if (!is_refresh_token) {
+                        await interaction.editReply(":x: This is not a valid token");
+                        return;
+                    }
+
+                    try {
+                        if ((await refresh(token)) === undefined) {
+                            throw new Error("Invalid token");
+                        }
+                    } catch {
+                        await interaction.editReply(":x: This refresh token is invalid");
+                        return;
+                    }
 
                     const data = await ctx.user<{ "openai-token"?: string }>();
                     if (data) {
@@ -103,7 +130,17 @@ export class AgentModule extends BaseModule implements Module {
 
                     await interaction.deferReply();
 
-                    const agent = new Agent(data["openai-token"]);
+                    const agent = new Agent("", data["openai-token"]);
+                    try {
+                        await agent.refresh();
+                    } catch (err) {
+                        await interaction.editReply({
+                            content:
+                                ":x: Failed to refresh your token, please re-authenticate again",
+                        });
+                        return;
+                    }
+
                     this.agents.set(data["openai-token"], agent);
                     const sess = agent.session();
 
