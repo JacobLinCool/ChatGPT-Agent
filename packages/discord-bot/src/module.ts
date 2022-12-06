@@ -1,5 +1,5 @@
 import { BaseModule, CallNextModule, Module, StoreContext } from "pure-cat";
-import { ClientEvents, GatewayIntentBits, Message } from "discord.js";
+import { ClientEvents, EmbedBuilder, GatewayIntentBits, Message } from "discord.js";
 import decode from "jwt-decode";
 import { Agent, refresh, Session } from "chatgpt-agent";
 import { PRESET } from "./preset";
@@ -283,6 +283,60 @@ export class AgentModule extends BaseModule implements Module {
                             content: `:x: There is no public conversation in this channel`,
                         });
                     }
+
+                    break;
+                }
+                case "sessions": {
+                    const user = await ctx.user<UserStore>();
+                    if (!user || !user["openai-token"]) {
+                        await interaction.reply({
+                            ephemeral: true,
+                            content: ":x: You need to authenticate first",
+                        });
+                        return;
+                    }
+
+                    const agent = this.agents.get(user["openai-token"]);
+                    if (!agent) {
+                        await interaction.reply({
+                            ephemeral: true,
+                            content: ":x: No sessions found",
+                        });
+                        return;
+                    }
+
+                    const sessions = [...this.sessions.entries()].filter(
+                        ([, s]) => s.session.agent === agent,
+                    );
+
+                    if (sessions.length === 0) {
+                        await interaction.reply({
+                            ephemeral: true,
+                            content: ":x: No sessions found",
+                        });
+                        return;
+                    }
+
+                    const embed = new EmbedBuilder().setTitle("Your sessions").setDescription(
+                        sessions
+                            .map((s, i) => {
+                                const chan = this.bot?.client.channels.cache.get(s[0]);
+                                const name = chan
+                                    ? chan.isDMBased()
+                                        ? "DM"
+                                        : `${chan.name} (${chan.guild.name})`
+                                    : "Unknown";
+                                return `${i + 1}. ${
+                                    s[1].public ? ":globe_with_meridians:" : ":lock:"
+                                } ${name}`;
+                            })
+                            .join("\n"),
+                    );
+
+                    await interaction.reply({
+                        ephemeral: true,
+                        embeds: [embed],
+                    });
 
                     break;
                 }

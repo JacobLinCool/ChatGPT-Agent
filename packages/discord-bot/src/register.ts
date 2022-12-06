@@ -26,6 +26,7 @@ const commands = [
     new SlashCommandBuilder()
         .setName("private")
         .setDescription("Revoke the public access in the channel"),
+    new SlashCommandBuilder().setName("sessions").setDescription("Show the current sessions"),
 ].map((command) => command.toJSON());
 
 (async () => {
