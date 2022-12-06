@@ -1,6 +1,6 @@
 import EventEmitter from "node:events";
 import type { Session } from "./session";
-import { moderate, converse } from "./request";
+import { converse } from "./request";
 import { log } from "./debug";
 
 export class Conversation extends EventEmitter {
@@ -12,20 +12,9 @@ export class Conversation extends EventEmitter {
     }
 
     public async run(): Promise<string> {
-        const result = await Promise.all([this.moderate(), this.converse()]);
+        const result = await this.converse().catch((err) => (this.emit("error", err), ""));
         log("Conversation Result", result);
-        return result[1];
-    }
-
-    public async moderate(): Promise<{
-        flagged: boolean;
-        blocked: boolean;
-        moderation_id: string;
-    }> {
-        return moderate(
-            this.session.agent.token,
-            this.session.history.map((h) => h.message).join("\n\n") + "\n\n" + this.message,
-        );
+        return result;
     }
 
     public async converse(): Promise<string> {
