@@ -14,8 +14,10 @@ export class AgentModule extends BaseModule implements Module {
         GatewayIntentBits.DirectMessages,
     ];
 
+    // agent and token is associated with a user
     private agents = new Map<string, Agent>();
-    private tokens = new Map<string, string>();
+    // session is associated with a channel
+    private sessions = new Map<string, { session: Session; public: boolean; queue: Message[] }>();
 
     async interactionCreate(
         args: ClientEvents["interactionCreate"],
@@ -58,7 +60,7 @@ export class AgentModule extends BaseModule implements Module {
                         return;
                     }
 
-                    const data = await ctx.user<{ "openai-token"?: string }>();
+                    const data = await ctx.user<UserStore>();
                     if (data) {
                         data["openai-token"] = token;
                     }
@@ -68,7 +70,7 @@ export class AgentModule extends BaseModule implements Module {
                     break;
                 }
                 case "revoke": {
-                    const data = await ctx.user<{ "openai-token"?: string }>();
+                    const data = await ctx.user<UserStore>();
 
                     if (data && data["openai-token"]) {
                         data["openai-token"] = undefined;
@@ -86,10 +88,13 @@ export class AgentModule extends BaseModule implements Module {
                     break;
                 }
                 case "me": {
-                    const data = await ctx.user<{ "openai-token"?: string }>();
+                    const data = await ctx.user<UserStore>();
+                    const token = data?.["openai-token"]
+                        ? this.agents.get(data["openai-token"])?.token
+                        : undefined;
 
-                    if (data && data["openai-token"]) {
-                        const decoded = decode(data["openai-token"]);
+                    if (token) {
+                        const decoded = decode(token);
                         await interaction.reply({
                             ephemeral: true,
                             content: "```json\n" + JSON.stringify(decoded, null, 4) + "\n```",
@@ -97,7 +102,7 @@ export class AgentModule extends BaseModule implements Module {
                     } else {
                         await interaction.reply({
                             ephemeral: true,
-                            content: ":x: There is no token on your account",
+                            content: ":x: There is no token to show",
                         });
                     }
 
@@ -106,8 +111,8 @@ export class AgentModule extends BaseModule implements Module {
                 case "start": {
                     const preset = interaction.options.getString("preset", false) || "default";
 
-                    const data = await ctx.user<{ "openai-token"?: string }>();
-                    if (!data || !data["openai-token"]) {
+                    const user = await ctx.user<UserStore>();
+                    if (!user || !user["openai-token"]) {
                         await interaction.reply({
                             ephemeral: true,
                             content:
@@ -115,30 +120,20 @@ export class AgentModule extends BaseModule implements Module {
                         });
                         return;
                     }
-                    if (this.agents.has(data["openai-token"])) {
-                        await interaction.reply({
-                            ephemeral: true,
-                            content:
-                                ":x: You already started a session, use `/stop` to stop it first",
-                        });
-                        return;
-                    }
-
-                    const preloads =
-                        preset in PRESET
-                            ? PRESET[preset as keyof typeof PRESET]
-                            : PRESET["default"];
 
                     await interaction.deferReply();
 
-                    const agent = new Agent(
-                        this.tokens.get(data["openai-token"]) || "",
-                        data["openai-token"],
-                    );
+                    const agent =
+                        this.agents.get(user["openai-token"]) ??
+                        new Agent("", user["openai-token"]);
+
+                    if (!this.agents.has(user["openai-token"])) {
+                        this.agents.set(user["openai-token"], agent);
+                    }
+
                     try {
                         if (agent.validate() === false) {
                             await agent.refresh();
-                            this.tokens.set(data["openai-token"], agent.token);
                         }
                     } catch (err) {
                         await interaction.editReply({
@@ -148,12 +143,24 @@ export class AgentModule extends BaseModule implements Module {
                         return;
                     }
 
-                    this.agents.set(data["openai-token"], agent);
-                    const sess = agent.session();
+                    if (this.sessions.has(interaction.channelId)) {
+                        await interaction.editReply({
+                            content: ":x: There is already a session running in this channel",
+                        });
+                        return;
+                    }
+
+                    const session = agent.session();
+                    this.sessions.set(interaction.channelId, { session, public: false, queue: [] });
+
+                    const preloads =
+                        preset in PRESET
+                            ? PRESET[preset as keyof typeof PRESET]
+                            : PRESET["default"];
 
                     try {
                         for (const preload of preloads) {
-                            await sess.talk(preload).response;
+                            await session.talk(preload).response;
                         }
 
                         await interaction.editReply({
@@ -173,35 +180,7 @@ export class AgentModule extends BaseModule implements Module {
                     break;
                 }
                 case "stop": {
-                    const data = await ctx.user<{ "openai-token"?: string }>();
-                    if (!data || !data["openai-token"]) {
-                        await interaction.reply({
-                            ephemeral: true,
-                            content: ":x: You need to authenticate first",
-                        });
-                        return;
-                    }
-
-                    const agent = this.agents.get(data["openai-token"]);
-                    if (!agent) {
-                        await interaction.reply({
-                            ephemeral: true,
-                            content: ":x: You need to start a session first",
-                        });
-                        return;
-                    }
-
-                    this.agents.delete(data["openai-token"]);
-
-                    await interaction.reply({
-                        ephemeral: true,
-                        content: ":white_check_mark: Successfully stopped the session",
-                    });
-
-                    break;
-                }
-                case "public": {
-                    const user = await ctx.user<{ "openai-token"?: string }>();
+                    const user = await ctx.user<UserStore>();
                     if (!user || !user["openai-token"]) {
                         await interaction.reply({
                             ephemeral: true,
@@ -219,16 +198,70 @@ export class AgentModule extends BaseModule implements Module {
                         return;
                     }
 
-                    const chan = await ctx.channel<{ public?: string }>();
-                    if (!chan) {
+                    const session = this.sessions.get(interaction.channelId);
+                    if (!session) {
                         await interaction.reply({
                             ephemeral: true,
-                            content: ":x: Failed to get channel",
+                            content: ":x: There is no session running in this channel",
                         });
                         return;
                     }
 
-                    chan.public = user["openai-token"];
+                    if (session.session.agent !== agent) {
+                        await interaction.reply({
+                            ephemeral: true,
+                            content: ":x: You are not the owner of this session",
+                        });
+                        return;
+                    }
+
+                    this.sessions.delete(interaction.channelId);
+                    session.session.agent.sessions.delete(session.session.id);
+
+                    await interaction.reply({
+                        ephemeral: true,
+                        content: ":white_check_mark: Successfully stopped the session",
+                    });
+
+                    break;
+                }
+                case "public": {
+                    const user = await ctx.user<UserStore>();
+                    if (!user || !user["openai-token"]) {
+                        await interaction.reply({
+                            ephemeral: true,
+                            content: ":x: You need to authenticate first",
+                        });
+                        return;
+                    }
+
+                    const agent = this.agents.get(user["openai-token"]);
+                    if (!agent) {
+                        await interaction.reply({
+                            ephemeral: true,
+                            content: ":x: You need to start a session first",
+                        });
+                        return;
+                    }
+
+                    const session = this.sessions.get(interaction.channelId);
+                    if (!session) {
+                        await interaction.reply({
+                            ephemeral: true,
+                            content: ":x: There is no session running in this channel",
+                        });
+                        return;
+                    }
+
+                    if (session.session.agent !== agent) {
+                        await interaction.reply({
+                            ephemeral: true,
+                            content: ":x: You are not the owner of this session",
+                        });
+                        return;
+                    }
+
+                    session.public = true;
 
                     await interaction.reply({
                         content: `:white_check_mark: <@${interaction.user.id}> has made conversation public in this channel`,
@@ -237,27 +270,19 @@ export class AgentModule extends BaseModule implements Module {
                     break;
                 }
                 case "private": {
-                    const chan = await ctx.channel<{ public?: string }>();
-                    if (!chan) {
+                    const session = this.sessions.get(interaction.channelId);
+
+                    if (session && session.public) {
+                        session.public = false;
+                        await interaction.reply({
+                            content: `:white_check_mark: <@${interaction.user.id}> has made conversation private in this channel`,
+                        });
+                    } else {
                         await interaction.reply({
                             ephemeral: true,
-                            content: ":x: Failed to get channel",
+                            content: `:x: There is no public conversation in this channel`,
                         });
-                        return;
                     }
-
-                    if (!chan.public) {
-                        await interaction.reply({
-                            ephemeral: true,
-                            content: ":x: There is no public conversation in this channel",
-                        });
-                        return;
-                    }
-
-                    chan.public = undefined;
-                    await interaction.reply({
-                        content: `:white_check_mark: <@${interaction.user.id}> has made conversation private in this channel`,
-                    });
 
                     break;
                 }
@@ -290,19 +315,34 @@ export class AgentModule extends BaseModule implements Module {
             return;
         }
 
-        const user = await ctx.user<{ "openai-token"?: string }>();
-        const channel = await ctx.channel<{ public?: string }>();
-        const token = channel?.public || user?.["openai-token"];
-        if (!user || !token) {
+        const session = this.sessions.get(chan.id);
+        if (!session) {
             await next();
             return;
         }
 
-        const agent = this.agents.get(token);
-        if (!agent) {
+        const user = await ctx.user<UserStore>();
+        if ((!user || !user["openai-token"]) && !session.public) {
             await next();
             return;
         }
+
+        session.queue.push(message);
+        if (session.queue.length === 1) {
+            await this.consume(session.session, session.queue);
+        }
+    }
+
+    async consume(session: Session, queue: Message<boolean>[]): Promise<void> {
+        if (queue.length === 0) {
+            return;
+        }
+
+        const message = queue[0];
+        if (!message) {
+            return;
+        }
+        const chan = message.channel;
 
         let waiting = true;
 
@@ -324,8 +364,7 @@ export class AgentModule extends BaseModule implements Module {
             }
         }, 5000);
 
-        const sess = agent.sessions.values().next().value as Session;
-        const conv = sess.talk(message.content);
+        const conv = session.talk(message.content);
 
         let reply: Message;
         let msg = "";
@@ -358,7 +397,7 @@ export class AgentModule extends BaseModule implements Module {
             if (reply) {
                 await reply.edit(msg);
             } else {
-                reply = await chan.send(msg);
+                reply = chan.isDMBased() ? await chan.send(msg) : await message.reply(msg);
             }
         };
 
@@ -374,5 +413,15 @@ export class AgentModule extends BaseModule implements Module {
             update(":x: ChatGPT was hit by an error: " + (err?.message || err).toString());
         });
         await conv.response;
+
+        queue.shift();
+        if (queue.length > 0) {
+            await this.consume(session, queue);
+        }
     }
+}
+
+interface UserStore {
+    "openai-token"?: string;
+    [key: string]: unknown;
 }
