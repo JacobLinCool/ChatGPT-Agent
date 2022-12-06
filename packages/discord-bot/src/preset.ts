@@ -7,4 +7,10 @@ export const PRESET = {
     peko: ["從現在開始每一句話劇尾都要加上「Peko」"],
     what: ["From now on, you can only reply with the word 'what', nothing else."],
     morse: ["From now on, you can only reply with Morse code, nothing else."],
+    prompt: [
+        `A "prompt" is a collection of keywords that describe a scene and/or a person. For example, a prompt for "a high school girl with pink hair" may be like this: \`1girl, {pink hair}, blue eyes, {uniform}, petite, happy, excited, {{long hair}}, cowboy shot\`. More brackets mean a higher weight of the wrapped keyword.`,
+    ],
+    "prompt-only": [
+        `A "prompt" is a collection of keywords that describe a scene and/or a person. For example, a prompt for "a high school girl with pink hair" may be like this: \`1girl, {pink hair}, blue eyes, {uniform}, petite, happy, excited, {{long hair}}, cowboy shot\`. More brackets mean a higher weight of the wrapped keyword. I want you to only reply with the prompt that descibes my words, and nothing else. Do not write explanations.`,
+    ],
 };
