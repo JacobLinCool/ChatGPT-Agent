@@ -1,21 +1,28 @@
 import { randomUUID } from "node:crypto";
-import fetch from "node-fetch";
+import fetch, { Headers } from "node-fetch";
 import { log } from "./debug";
 
-export function headers(token: string): Record<string, string> {
-    return {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
-        referer: "https://chat.openai.com/chat",
-    };
+export function make_headers(token?: string): Headers {
+    const headers = new Headers();
+    if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+    }
+    headers.set("Content-Type", "application/json");
+    headers.set(
+        "User-Agent",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+    );
+    return headers;
 }
 
 export async function moderate(
     token: string,
     input: string,
 ): Promise<{ flagged: boolean; blocked: boolean; moderation_id: string }> {
+    const headers = make_headers(token);
+    log(headers);
     const res = await fetch("https://chat.openai.com/backend-api/moderations", {
-        headers: headers(token),
+        headers,
         body: JSON.stringify({
             input,
             model: "text-moderation-playground",
@@ -27,8 +34,11 @@ export async function moderate(
         try {
             const data = await res.clone().json();
             log("moderation error", data);
+            throw new Error(data?.error);
         } catch {
-            log("moderation error", await res.clone().text());
+            const text = await res.clone().text();
+            log("moderation error", text);
+            throw new Error(text);
         }
     }
 
@@ -42,12 +52,11 @@ export async function converse(
     conversation_id?: string,
     parent_id?: string,
 ): Promise<NodeJS.ReadableStream> {
+    const headers = make_headers(token);
+    headers.set("Accept", "text/event-stream");
+    log(headers);
     const res = await fetch("https://chat.openai.com/backend-api/conversation", {
-        headers: {
-            ...headers(token),
-            accept: "text/event-stream",
-            "X-OpenAI-Assistant-App-Id": "",
-        },
+        headers,
         body: JSON.stringify({
             action: "next",
             messages: [
@@ -68,8 +77,11 @@ export async function converse(
         try {
             const data = await res.clone().json();
             log("conversation error", data);
+            throw new Error(data?.error);
         } catch {
-            log("conversation error", await res.clone().text());
+            const text = await res.clone().text();
+            log("conversation error", text);
+            throw new Error(text);
         }
     }
 
@@ -77,20 +89,22 @@ export async function converse(
 }
 
 export async function refresh(refresh_token: string): Promise<string | undefined> {
+    const headers = make_headers();
+    headers.set("Cookie", `__Secure-next-auth.session-token=${refresh_token}`);
+    log(headers);
     const res = await fetch("https://chat.openai.com/api/auth/session", {
-        headers: {
-            ...headers(""),
-            authorization: "",
-            cookie: `__Secure-next-auth.session-token=${refresh_token}`,
-        },
+        headers,
     });
     log("sent refresh request", res.status);
     if (res.status !== 200) {
         try {
             const data = await res.clone().json();
             log("refresh error", data);
+            throw new Error(data?.error);
         } catch {
-            log("refresh error", await res.clone().text());
+            const text = await res.clone().text();
+            log("refresh error", text);
+            throw new Error(text);
         }
     }
 
