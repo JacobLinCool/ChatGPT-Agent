@@ -151,14 +151,24 @@ export class AgentModule extends BaseModule implements Module {
                     this.agents.set(data["openai-token"], agent);
                     const sess = agent.session();
 
-                    for (const preload of preloads) {
-                        await sess.talk(preload).response;
-                    }
+                    try {
+                        for (const preload of preloads) {
+                            await sess.talk(preload).response;
+                        }
 
-                    await interaction.editReply({
-                        content:
-                            ":white_check_mark: Started a session with preset `" + preset + "`",
-                    });
+                        await interaction.editReply({
+                            content:
+                                ":white_check_mark: Started a session with preset `" + preset + "`",
+                        });
+                    } catch (err) {
+                        if (err instanceof Error) {
+                            await interaction.editReply({
+                                content:
+                                    ":x: ChatGPT was hit by an error: " +
+                                    (err?.message || err).toString(),
+                            });
+                        }
+                    }
 
                     break;
                 }
