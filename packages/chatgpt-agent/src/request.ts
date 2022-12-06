@@ -14,7 +14,7 @@ export async function moderate(
     token: string,
     input: string,
 ): Promise<{ flagged: boolean; blocked: boolean; moderation_id: string }> {
-    const result = await fetch("https://chat.openai.com/backend-api/moderations", {
+    const res = await fetch("https://chat.openai.com/backend-api/moderations", {
         headers: headers(token),
         body: JSON.stringify({
             input,
@@ -22,9 +22,17 @@ export async function moderate(
         }),
         method: "POST",
     });
-    log("sent moderation request", result.status);
+    log("sent moderation request", res.status);
+    if (res.status !== 200) {
+        try {
+            const data = await res.json();
+            log("moderation error", data);
+        } catch {
+            log("moderation error", await res.text());
+        }
+    }
 
-    const data = await result.json();
+    const data = await res.json();
     return data;
 }
 
@@ -56,6 +64,14 @@ export async function converse(
         method: "POST",
     });
     log("sent conversation request", res.status);
+    if (res.status !== 200) {
+        try {
+            const data = await res.json();
+            log("conversation error", data);
+        } catch {
+            log("conversation error", await res.text());
+        }
+    }
 
     return res.body;
 }
@@ -69,6 +85,14 @@ export async function refresh(refresh_token: string): Promise<string | undefined
         },
     });
     log("sent refresh request", res.status);
+    if (res.status !== 200) {
+        try {
+            const data = await res.json();
+            log("refresh error", data);
+        } catch {
+            log("refresh error", await res.text());
+        }
+    }
 
     const data = await res.json();
     return data?.accessToken;
