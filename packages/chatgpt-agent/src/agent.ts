@@ -29,16 +29,20 @@ export class Agent extends EventEmitter {
     }
 
     public validate(): boolean {
-        const [header, payload, signature] = this.token.split(".");
-        if (!header || !payload || !signature) {
+        try {
+            const [header, payload, signature] = this.token.split(".");
+            if (!header || !payload || !signature) {
+                return false;
+            }
+
+            const payload_json = JSON.parse(Buffer.from(payload, "base64").toString());
+            if (payload_json.exp < Date.now() / 1000) {
+                return false;
+            }
+
+            return true;
+        } catch {
             return false;
         }
-
-        const payload_json = JSON.parse(Buffer.from(payload, "base64").toString());
-        if (payload_json.exp < Date.now() / 1000) {
-            return false;
-        }
-
-        return true;
     }
 }
