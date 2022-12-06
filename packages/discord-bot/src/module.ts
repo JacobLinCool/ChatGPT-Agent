@@ -422,7 +422,7 @@ export class AgentModule extends BaseModule implements Module {
 
         let reply: Message;
         let msg = "";
-        let bondary = Date.now() + 2000;
+        let boundary = Date.now() + 2000;
 
         const update = async (partial?: string) => {
             if (!partial) {
@@ -439,10 +439,10 @@ export class AgentModule extends BaseModule implements Module {
                 waiting = false;
             }
 
-            if (Date.now() < bondary) {
+            if (Date.now() < boundary) {
                 return;
             }
-            bondary = Date.now() + 1000;
+            boundary = Date.now() + 1000;
 
             if (msg.length > 2000) {
                 msg = msg.slice(0, 2000);
@@ -458,12 +458,13 @@ export class AgentModule extends BaseModule implements Module {
         conv.on("partial", update);
         conv.once("complete", (msg) => {
             conv.off("partial", update);
-            bondary = 0;
+            boundary = 0;
             update(msg);
         });
         conv.on("error", (err) => {
             console.error(err);
             conv.off("partial", update);
+            boundary = 0;
             update(":x: ChatGPT was hit by an error: " + (err?.message || err).toString());
         });
         await conv.response;
