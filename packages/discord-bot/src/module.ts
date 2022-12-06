@@ -15,6 +15,7 @@ export class AgentModule extends BaseModule implements Module {
     ];
 
     private agents = new Map<string, Agent>();
+    private tokens = new Map<string, string>();
 
     async interactionCreate(
         args: ClientEvents["interactionCreate"],
@@ -130,9 +131,15 @@ export class AgentModule extends BaseModule implements Module {
 
                     await interaction.deferReply();
 
-                    const agent = new Agent("", data["openai-token"]);
+                    const agent = new Agent(
+                        this.tokens.get(data["openai-token"]) || "",
+                        data["openai-token"],
+                    );
                     try {
-                        await agent.refresh();
+                        if (agent.validate() === false) {
+                            await agent.refresh();
+                            this.tokens.set(data["openai-token"], agent.token);
+                        }
                     } catch (err) {
                         await interaction.editReply({
                             content:
