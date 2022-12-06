@@ -355,6 +355,8 @@ export class AgentModule extends BaseModule implements Module {
         });
         conv.on("error", (err) => {
             console.error(err);
+            conv.off("partial", update);
+            update(":x: ChatGPT was hit by an error: " + (err?.message || err).toString());
         });
         await conv.response;
     }
