@@ -25,10 +25,10 @@ export async function moderate(
     log("sent moderation request", res.status);
     if (res.status !== 200) {
         try {
-            const data = await res.json();
+            const data = await res.clone().json();
             log("moderation error", data);
         } catch {
-            log("moderation error", await res.text());
+            log("moderation error", await res.clone().text());
         }
     }
 
@@ -66,10 +66,10 @@ export async function converse(
     log("sent conversation request", res.status);
     if (res.status !== 200) {
         try {
-            const data = await res.json();
+            const data = await res.clone().json();
             log("conversation error", data);
         } catch {
-            log("conversation error", await res.text());
+            log("conversation error", await res.clone().text());
         }
     }
 
@@ -87,10 +87,10 @@ export async function refresh(refresh_token: string): Promise<string | undefined
     log("sent refresh request", res.status);
     if (res.status !== 200) {
         try {
-            const data = await res.json();
+            const data = await res.clone().json();
             log("refresh error", data);
         } catch {
-            log("refresh error", await res.text());
+            log("refresh error", await res.clone().text());
         }
     }
 
