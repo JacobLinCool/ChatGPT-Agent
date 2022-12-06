@@ -12,18 +12,25 @@ if (!token) {
     throw new Error("You must provide a token as environment variable `TOKEN`");
 }
 
-const agent = new Agent(token);
+const agent = new Agent(token, token);
 const session = agent.session();
 
-ask(process.argv[2]);
+(async () => {
+    if (!agent.validate()) {
+        await agent.refresh();
+        console.log("Refreshed token", agent.token);
+    }
 
-async function ask(prefill?: string) {
+    ask(process.argv.slice(2));
+})();
+
+async function ask(prefills?: string[]) {
     const io = createInterface({ input: process.stdin, output: process.stdout });
     io.write("\x1b[33m");
     const message = await new Promise<string>((resolve) => {
-        if (prefill) {
-            io.write("You: " + prefill + "\n");
-            resolve(prefill);
+        if (prefills?.length) {
+            io.write("You: " + prefills[0] + "\n");
+            resolve(prefills[0]);
         } else {
             io.question("You: ", resolve);
         }
@@ -32,13 +39,16 @@ async function ask(prefill?: string) {
     io.close();
 
     const conv = session.talk(message);
-    const spinner = ora("Thinking ...").start();
+    const spinner = ora("Assistant: Thinking ...").start();
 
     const update = (partial: string) => {
         spinner.text = `Assistant: ${partial} ...`;
     };
 
     conv.on("partial", update);
+    conv.once("error", (err) => {
+        spinner.fail(`ERROR: ${err.message}`);
+    });
     const response = await conv.response;
     conv.off("partial", update);
 
@@ -46,6 +56,6 @@ async function ask(prefill?: string) {
     console.log(`Assistant: ${response.trim()}`);
 
     if (!message.toLowerCase().startsWith("bye")) {
-        ask();
+        ask(prefills?.slice(1));
     }
 }
