@@ -7,3 +7,7 @@ new Bot()
     .use(new AgentModule())
     .start()
     .then(() => console.log("Bot started!"));
+
+process.on("SIGTERM", () => {
+    process.exit();
+});
