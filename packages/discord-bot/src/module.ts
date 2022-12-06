@@ -285,6 +285,11 @@ export class AgentModule extends BaseModule implements Module {
             return;
         }
 
+        if (message.content.length === 0) {
+            await next();
+            return;
+        }
+
         const user = await ctx.user<{ "openai-token"?: string }>();
         const channel = await ctx.channel<{ public?: string }>();
         const token = channel?.public || user?.["openai-token"];
