@@ -25,6 +25,7 @@ export class Conversation extends EventEmitter {
             this.message,
             this.session.id.startsWith("tmp-") ? undefined : this.session.id,
             history[history.length - 1]?.id,
+            this.session.agent.backend,
         );
 
         let last: Block;

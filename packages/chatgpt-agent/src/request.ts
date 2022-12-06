@@ -18,10 +18,11 @@ export function make_headers(token?: string): Headers {
 export async function moderate(
     token: string,
     input: string,
+    backend = "https://chat.openai.com/backend-api",
 ): Promise<{ flagged: boolean; blocked: boolean; moderation_id: string }> {
     const headers = make_headers(token);
     log(headers);
-    const res = await fetch("https://chat.openai.com/backend-api/moderations", {
+    const res = await fetch(`${backend}/moderations`, {
         headers,
         body: JSON.stringify({
             input,
@@ -51,11 +52,12 @@ export async function converse(
     content: string,
     conversation_id?: string,
     parent_id?: string,
+    backend = "https://chat.openai.com/backend-api",
 ): Promise<NodeJS.ReadableStream> {
     const headers = make_headers(token);
     headers.set("Accept", "text/event-stream");
     log(headers);
-    const res = await fetch("https://chat.openai.com/backend-api/conversation", {
+    const res = await fetch(`${backend}/conversation`, {
         headers,
         body: JSON.stringify({
             action: "next",
@@ -77,7 +79,7 @@ export async function converse(
         try {
             const data = await res.clone().json();
             log("conversation error", data);
-            throw new Error(data?.error);
+            throw new Error(data?.error?.detail);
         } catch {
             const text = await res.clone().text();
             log("conversation error", text);
@@ -100,7 +102,7 @@ export async function refresh(refresh_token: string): Promise<string | undefined
         try {
             const data = await res.clone().json();
             log("refresh error", data);
-            throw new Error(data?.error);
+            throw new Error(data?.error?.detail);
         } catch {
             const text = await res.clone().text();
             log("refresh error", text);

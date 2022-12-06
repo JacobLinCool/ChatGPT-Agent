@@ -4,9 +4,17 @@ import { refresh } from "./request";
 
 export class Agent extends EventEmitter {
     public sessions = new Map<string, Session>();
+    public backend: string;
 
-    constructor(public token: string, public refresh_token?: string) {
+    constructor(
+        public token: string,
+        public refresh_token?: string,
+        {
+            backend = process.env.CHATGPT_BACKEND || "https://chat.openai.com/backend-api",
+        }: { backend?: string } = {},
+    ) {
         super();
+        this.backend = backend;
     }
 
     public session(): Session {
