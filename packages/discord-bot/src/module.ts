@@ -376,7 +376,7 @@ export class AgentModule extends BaseModule implements Module {
         }
 
         const user = await ctx.user<UserStore>();
-        if ((!user || !user["openai-token"]) && !session.public) {
+        if ((!user || !user["openai-token"]) && !session.public && !chan.isDMBased()) {
             await next();
             return;
         }
