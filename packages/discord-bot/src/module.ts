@@ -399,6 +399,8 @@ export class AgentModule extends BaseModule implements Module {
         const chan = message.channel;
 
         let waiting = true;
+        let wait_counter = 0;
+        const wait_interval = 5_000;
 
         try {
             await chan.sendTyping();
@@ -407,6 +409,11 @@ export class AgentModule extends BaseModule implements Module {
         }
 
         const typing = setInterval(async () => {
+            wait_counter++;
+            if (wait_counter > 60_000 / wait_interval) {
+                waiting = false;
+            }
+
             if (waiting === false) {
                 clearInterval(typing);
             } else {
@@ -416,7 +423,7 @@ export class AgentModule extends BaseModule implements Module {
                     clearInterval(typing);
                 }
             }
-        }, 5000);
+        }, wait_interval);
 
         const conv = session.talk(message.content);
 
