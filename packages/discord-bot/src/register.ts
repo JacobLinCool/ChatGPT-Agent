@@ -1,5 +1,6 @@
 import { config } from "dotenv";
 import { REST, Routes, SlashCommandBuilder } from "discord.js";
+import { PRESET } from "./preset";
 
 const commands = [
     new SlashCommandBuilder()
@@ -16,7 +17,17 @@ const commands = [
     new SlashCommandBuilder()
         .setName("start")
         .setDescription("Start a conversation with the bot")
-        .addStringOption((option) => option.setName("preset").setDescription("Preset to use")),
+        .addStringOption((option) =>
+            option
+                .setName("preset")
+                .setDescription("Preset to use")
+                .addChoices(
+                    ...Object.keys(PRESET).map((preset) => ({
+                        name: preset,
+                        value: preset,
+                    })),
+                ),
+        ),
     new SlashCommandBuilder()
         .setName("stop")
         .setDescription("Stop the current conversation with the bot"),
