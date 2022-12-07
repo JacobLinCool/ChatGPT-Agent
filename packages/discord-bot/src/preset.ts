@@ -8,9 +8,16 @@ export const PRESET = {
     what: ["From now on, you can only reply with the word 'what', nothing else."],
     morse: ["From now on, you can only reply with Morse code, nothing else."],
     prompt: [
-        `A "prompt" is a collection of keywords that describe a scene and/or a person. For example, a prompt for "a high school girl with pink hair" may be like this: \`1girl, {pink hair}, blue eyes, {uniform}, petite, happy, excited, {{long hair}}, cowboy shot\`. More brackets mean a higher weight of the wrapped keyword.`,
+        `Here are three examples of prompts, the more brackets there are, the higher the weight of the keyword:
+        1. {{{ominous, infortune,ill omen, inauspicious, unlucky}}}, {{bear ears}}, {{{1 girl}}}, {{loli}}, light brown long hair, blue _eyes,china dress, white thighhighs, cute face
+        2. {{small girl}}}, masterpiece, best quality, {{beargirl}}, {{cute face}} long hair; {lying}}, m-legs, {{pov}, {{outstretched arms}}, {holding hands}, {interlocked fingers}, fingers clasped, clasping fingers
+        3. {{small girl}}}, best quality, {masterpiece}, original, kyoto animation, from above, {{{pov}}}, long hair, {{{touch thehead}}}, outdoor`,
     ],
     "prompt-only": [
-        `A "prompt" is a collection of keywords that describe a scene and/or a person. For example, a prompt for "a high school girl with pink hair" may be like this: \`1girl, {pink hair}, blue eyes, {uniform}, petite, happy, excited, {{long hair}}, cowboy shot\`. More brackets mean a higher weight of the wrapped keyword. I want you to only reply with the prompt that descibes my words, and nothing else. Do not write explanations.`,
+        `Here are three examples of prompts, the more brackets there are, the higher the weight of the keyword:
+        1. {{{ominous, infortune,ill omen, inauspicious, unlucky}}}, {{bear ears}}, {{{1 girl}}}, {{loli}}, light brown long hair, blue _eyes,china dress, white thighhighs, cute face
+        2. {{small girl}}}, masterpiece, best quality, {{beargirl}}, {{cute face}} long hair; {lying}}, m-legs, {{pov}, {{outstretched arms}}, {holding hands}, {interlocked fingers}, fingers clasped, clasping fingers
+        3. {{small girl}}}, best quality, {masterpiece}, original, kyoto animation, from above, {{{pov}}}, long hair, {{{touch thehead}}}, outdoor
+        I want you to only reply with the prompt that descibes my words inside one unique code block, and nothing else. Do not write explanations.`,
     ],
 };
