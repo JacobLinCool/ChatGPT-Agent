@@ -8,16 +8,21 @@ export const PRESET = {
     what: ["From now on, you can only reply with the word 'what', nothing else."],
     morse: ["From now on, you can only reply with Morse code, nothing else."],
     prompt: [
-        `Here are three examples of prompts, the more brackets there are, the higher the weight of the keyword:
-        1. {{{ominous, infortune,ill omen, inauspicious, unlucky}}}, {{bear ears}}, {{{1 girl}}}, {{loli}}, light brown long hair, blue _eyes,china dress, white thighhighs, cute face
-        2. {{small girl}}}, masterpiece, best quality, {{beargirl}}, {{cute face}} long hair; {lying}}, m-legs, {{pov}, {{outstretched arms}}, {holding hands}, {interlocked fingers}, fingers clasped, clasping fingers
-        3. {{small girl}}}, best quality, {masterpiece}, original, kyoto animation, from above, {{{pov}}}, long hair, {{{touch thehead}}}, outdoor`,
+        `"Prompt" is a collection of keywords that describe a scene. The keywords must be in English. The more brackets there are, the higher the weight of the keyword.
+
+        Here are three examples of prompts:
+                1. {{{ominous, infortune,ill omen, inauspicious, unlucky}}}, {{bear ears}}, {{{1 girl}}}, {{loli}}, light brown long hair, blue _eyes,china dress, white thighhighs, cute face
+                2. {{small girl}}}, masterpiece, best quality, {{beargirl}}, {{cute face}} long hair; {lying}}, m-legs, {{pov}, {{outstretched arms}}, {holding hands}, {interlocked fingers}, fingers clasped, clasping fingers
+                3. {{small girl}}}, best quality, {masterpiece}, original, kyoto animation, from above, {{{pov}}}, long hair, {{{touch thehead}}}, outdoor`,
     ],
     "prompt-only": [
-        `Here are three examples of prompts, the more brackets there are, the higher the weight of the keyword:
-        1. {{{ominous, infortune,ill omen, inauspicious, unlucky}}}, {{bear ears}}, {{{1 girl}}}, {{loli}}, light brown long hair, blue _eyes,china dress, white thighhighs, cute face
-        2. {{small girl}}}, masterpiece, best quality, {{beargirl}}, {{cute face}} long hair; {lying}}, m-legs, {{pov}, {{outstretched arms}}, {holding hands}, {interlocked fingers}, fingers clasped, clasping fingers
-        3. {{small girl}}}, best quality, {masterpiece}, original, kyoto animation, from above, {{{pov}}}, long hair, {{{touch thehead}}}, outdoor
-        I want you to only reply with the prompt that descibes my words inside one unique code block, and nothing else. Do not write explanations.`,
+        `"Prompt" is a collection of keywords that describe a scene. The keywords must be in English. The more brackets there are, the higher the weight of the keyword.
+
+        Here are three examples of prompts:
+                1. {{{ominous, infortune,ill omen, inauspicious, unlucky}}}, {{bear ears}}, {{{1 girl}}}, {{loli}}, light brown long hair, blue _eyes,china dress, white thighhighs, cute face
+                2. {{small girl}}}, masterpiece, best quality, {{beargirl}}, {{cute face}} long hair; {lying}}, m-legs, {{pov}, {{outstretched arms}}, {holding hands}, {interlocked fingers}, fingers clasped, clasping fingers
+                3. {{small girl}}}, best quality, {masterpiece}, original, kyoto animation, from above, {{{pov}}}, long hair, {{{touch thehead}}}, outdoor
+        
+        I want you to only reply with the prompt that descibes my words inside one codeblock, and nothing else. Do not write explanations.`,
     ],
 };
