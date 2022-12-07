@@ -19,9 +19,14 @@ export async function moderate(
     token: string,
     input: string,
     backend = "https://chat.openai.com/backend-api",
+    timeout = 60_000,
 ): Promise<{ flagged: boolean; blocked: boolean; moderation_id: string }> {
     const headers = make_headers(token);
     log(headers);
+
+    const controller = new AbortController();
+    const timeout_id = setTimeout(() => controller.abort(), timeout);
+
     const res = await fetch(`${backend}/moderations`, {
         headers,
         body: JSON.stringify({
@@ -29,7 +34,15 @@ export async function moderate(
             model: "text-moderation-playground",
         }),
         method: "POST",
+        // @ts-expect-error signal should be compatible with AbortSignal
+        signal: controller.signal,
     });
+    clearTimeout(timeout_id);
+
+    if (controller.signal.aborted) {
+        throw new Error("Request timed out");
+    }
+
     log("sent moderation request", res.status);
     if (res.status !== 200) {
         try {
@@ -53,10 +66,15 @@ export async function converse(
     conversation_id?: string,
     parent_id?: string,
     backend = "https://chat.openai.com/backend-api",
+    timeout = 60_000,
 ): Promise<NodeJS.ReadableStream> {
     const headers = make_headers(token);
     headers.set("Accept", "text/event-stream");
     log(headers);
+
+    const controller = new AbortController();
+    const timeout_id = setTimeout(() => controller.abort(), timeout);
+
     const res = await fetch(`${backend}/conversation`, {
         headers,
         body: JSON.stringify({
@@ -73,7 +91,15 @@ export async function converse(
             model: "text-davinci-002-render",
         }),
         method: "POST",
+        // @ts-expect-error signal should be compatible with AbortSignal
+        signal: controller.signal,
     });
+    clearTimeout(timeout_id);
+
+    if (controller.signal.aborted) {
+        throw new Error("Request timed out");
+    }
+
     log("sent conversation request", res.status);
     if (res.status !== 200) {
         try {

@@ -5,16 +5,19 @@ import { refresh } from "./request";
 export class Agent extends EventEmitter {
     public sessions = new Map<string, Session>();
     public backend: string;
+    public timeout: number;
 
     constructor(
         public token: string,
         public refresh_token?: string,
         {
             backend = process.env.CHATGPT_BACKEND || "https://chat.openai.com/backend-api",
-        }: { backend?: string } = {},
+            timeout = Number(process.env.CHATGPT_TIMEOUT) || 60_000,
+        }: { backend?: string; timeout?: number } = {},
     ) {
         super();
         this.backend = backend;
+        this.timeout = timeout;
     }
 
     public session(): Session {
