@@ -379,7 +379,7 @@ export class AgentModule extends BaseModule implements Module {
         const passed =
             chan.isDMBased() ||
             session.public ||
-            user?.["openai-token"] === session.session.agent.token;
+            user?.["openai-token"] === session.session.agent.refresh_token;
         if (!passed) {
             await next();
             return;
