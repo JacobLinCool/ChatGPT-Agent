@@ -17,7 +17,10 @@ export class AgentModule extends BaseModule implements Module {
     // agent and token is associated with a user
     private agents = new Map<string, Agent>();
     // session is associated with a channel
-    private sessions = new Map<string, { session: Session; public: boolean; queue: Message[] }>();
+    private sessions = new Map<
+        string,
+        { user: string; session: Session; public: boolean; queue: Message[] }
+    >();
 
     async interactionCreate(
         args: ClientEvents["interactionCreate"],
@@ -151,7 +154,12 @@ export class AgentModule extends BaseModule implements Module {
                     }
 
                     const session = agent.session();
-                    this.sessions.set(interaction.channelId, { session, public: false, queue: [] });
+                    this.sessions.set(interaction.channelId, {
+                        user: interaction.user.id,
+                        session,
+                        public: false,
+                        queue: [],
+                    });
 
                     const preloads =
                         preset in PRESET
@@ -180,24 +188,6 @@ export class AgentModule extends BaseModule implements Module {
                     break;
                 }
                 case "stop": {
-                    const user = await ctx.user<UserStore>();
-                    if (!user || !user["openai-token"]) {
-                        await interaction.reply({
-                            ephemeral: true,
-                            content: ":x: You need to authenticate first",
-                        });
-                        return;
-                    }
-
-                    const agent = this.agents.get(user["openai-token"]);
-                    if (!agent) {
-                        await interaction.reply({
-                            ephemeral: true,
-                            content: ":x: You need to start a session first",
-                        });
-                        return;
-                    }
-
                     const session = this.sessions.get(interaction.channelId);
                     if (!session) {
                         await interaction.reply({
@@ -207,7 +197,7 @@ export class AgentModule extends BaseModule implements Module {
                         return;
                     }
 
-                    if (session.session.agent !== agent) {
+                    if (session.user !== interaction.user.id) {
                         await interaction.reply({
                             ephemeral: true,
                             content: ":x: You are not the owner of this session",
@@ -253,7 +243,7 @@ export class AgentModule extends BaseModule implements Module {
                         return;
                     }
 
-                    if (session.session.agent !== agent) {
+                    if (session.user !== interaction.user.id) {
                         await interaction.reply({
                             ephemeral: true,
                             content: ":x: You are not the owner of this session",
@@ -272,7 +262,7 @@ export class AgentModule extends BaseModule implements Module {
                 case "private": {
                     const session = this.sessions.get(interaction.channelId);
 
-                    if (session && session.public) {
+                    if (session?.public) {
                         session.public = false;
                         await interaction.reply({
                             content: `:white_check_mark: <@${interaction.user.id}> has made conversation private in this channel`,
@@ -306,7 +296,7 @@ export class AgentModule extends BaseModule implements Module {
                     }
 
                     const sessions = [...this.sessions.entries()].filter(
-                        ([, s]) => s.session.agent === agent,
+                        ([, s]) => s.user === interaction.user.id,
                     );
 
                     if (sessions.length === 0) {
