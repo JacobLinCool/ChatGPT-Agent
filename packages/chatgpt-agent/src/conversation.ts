@@ -4,6 +4,9 @@ import { converse } from "./request";
 import { log } from "./debug";
 
 export class Conversation extends EventEmitter {
+    /**
+     * The response of the conversation, resolved when the conversation is complete.
+     */
     public response: Promise<string>;
 
     constructor(public session: Session, public message: string) {
@@ -74,16 +77,34 @@ export class Conversation extends EventEmitter {
         });
     }
 
+    /**
+     * Emitted when a partial response is received.
+     */
     public on(event: "partial", listener: (partial: string) => void): this;
+    /**
+     * Emitted when the conversation is complete.
+     */
     public on(event: "complete", listener: (complete: string) => void): this;
+    /**
+     * Emitted when an error occurs.
+     */
     public on(event: "error", listener: (error: Error) => void): this;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public on(event: string, listener: (...args: any[]) => void): this {
         return super.on(event, listener);
     }
 
+    /**
+     * Emitted when a partial response is received.
+     */
     public once(event: "partial", listener: (partial: string) => void): this;
+    /**
+     * Emitted when the conversation is complete.
+     */
     public once(event: "complete", listener: (complete: string) => void): this;
+    /**
+     * Emitted when an error occurs.
+     */
     public once(event: "error", listener: (error: Error) => void): this;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public once(event: string, listener: (...args: any[]) => void): this {

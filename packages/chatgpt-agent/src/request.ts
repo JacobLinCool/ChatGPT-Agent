@@ -72,6 +72,17 @@ export async function moderate(
     throw new Error("Failed to moderate");
 }
 
+/**
+ * Sends a request to the ChatGPT API to get a response body.
+ *
+ * @param token - The ChatGPT token
+ * @param content - The content of the message
+ * @param conversation_id - The conversation id (optional)
+ * @param parent_id - The parent id (optional)
+ * @param backend - The ChatGPT backend (optional)
+ * @param timeout - The timeout (optional)
+ * @returns The response body from the ChatGPT API
+ */
 export async function converse(
     token: string,
     content: string,
@@ -144,9 +155,7 @@ export async function refresh(refresh_token: string): Promise<string | undefined
     headers.set("Cookie", `__Secure-next-auth.session-token=${refresh_token}`);
     log(headers);
 
-    const res = await fetch("https://chat.openai.com/api/auth/session", {
-        headers,
-    });
+    const res = await fetch("https://chat.openai.com/api/auth/session", { headers });
     log("sent refresh request", res.status);
     if (res.status !== 200) {
         try {
@@ -161,5 +170,9 @@ export async function refresh(refresh_token: string): Promise<string | undefined
     }
 
     const data = await res.json();
-    return data?.accessToken;
+    if (data?.accessToken) {
+        return data.accessToken;
+    } else {
+        throw new Error("No access token returned");
+    }
 }

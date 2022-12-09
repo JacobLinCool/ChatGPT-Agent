@@ -3,7 +3,14 @@ import type { Agent } from "./agent";
 import { Conversation } from "./conversation";
 
 export class Session extends EventEmitter {
+    /**
+     * Session id.
+     */
     public id = `tmp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    /**
+     * The conversation history, including the user's messages and the assistant's replies.
+     * Only the assistant's replies have a conversation property.
+     */
     public history: {
         author: "user" | "assistant";
         message: string;
@@ -15,6 +22,11 @@ export class Session extends EventEmitter {
         super();
     }
 
+    /**
+     * Sends a message to the session.
+     * @param message The message to send.
+     * @returns A new conversation.
+     */
     public talk(message: string): Conversation {
         this.history.push({
             author: "user",
@@ -29,6 +41,10 @@ export class Session extends EventEmitter {
         this.id = id;
     }
 
+    /**
+     * Get all the replies from the session.
+     * @returns An array of conversations.
+     */
     public replies(): Conversation[] {
         return this.history
             .filter((h) => h.author === "assistant" && h.conversation)
