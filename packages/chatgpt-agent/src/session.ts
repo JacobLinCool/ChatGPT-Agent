@@ -25,14 +25,19 @@ export class Session extends EventEmitter {
     }
 
     public rename(id: string): void {
-        this.agent.sessions.delete(this.id);
+        this.emit("rename", { old: this.id, new: id });
         this.id = id;
-        this.agent.sessions.set(this.id, this);
     }
 
     public replies(): Conversation[] {
         return this.history
             .filter((h) => h.author === "assistant" && h.conversation)
             .map((h) => h.conversation) as Conversation[];
+    }
+
+    public on(event: "rename", listener: (data: { old: string; new: string }) => void): this;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public on(event: string, listener: (...args: any[]) => void): this {
+        return super.on(event, listener);
     }
 }

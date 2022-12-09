@@ -23,6 +23,10 @@ export class Agent extends EventEmitter {
     public session(): Session {
         const sess = new Session(this);
         this.sessions.set(sess.id, sess);
+        sess.on("rename", (data) => {
+            this.sessions.delete(data.old);
+            this.sessions.set(data.new, sess);
+        });
         return sess;
     }
 
