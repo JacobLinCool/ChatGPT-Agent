@@ -1,6 +1,7 @@
 import EventEmitter from "node:events";
 import { Session } from "./session";
 import { refresh } from "./request";
+import { CHATGPT_BACKEND, CHATGPT_TIMEOUT } from "./config";
 
 export class Agent extends EventEmitter {
     public sessions = new Map<string, Session>();
@@ -11,8 +12,8 @@ export class Agent extends EventEmitter {
         public token: string,
         public refresh_token?: string,
         {
-            backend = process.env.CHATGPT_BACKEND || "https://chat.openai.com/backend-api",
-            timeout = Number(process.env.CHATGPT_TIMEOUT) || 60_000,
+            backend = CHATGPT_BACKEND,
+            timeout = CHATGPT_TIMEOUT,
         }: { backend?: string; timeout?: number } = {},
     ) {
         super();

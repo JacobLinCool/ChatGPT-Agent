@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import fetch, { Headers } from "node-fetch";
 import { log } from "./debug";
+import { CHATGPT_BACKEND, CHATGPT_TIMEOUT } from "./config";
 
 export function make_headers(token?: string): Headers {
     const headers = new Headers();
@@ -18,8 +19,8 @@ export function make_headers(token?: string): Headers {
 export async function moderate(
     token: string,
     input: string,
-    backend = "https://chat.openai.com/backend-api",
-    timeout = 60_000,
+    backend = CHATGPT_BACKEND,
+    timeout = CHATGPT_TIMEOUT,
 ): Promise<{ flagged: boolean; blocked: boolean; moderation_id: string }> {
     const headers = make_headers(token);
     log(headers);
@@ -65,8 +66,8 @@ export async function converse(
     content: string,
     conversation_id?: string,
     parent_id?: string,
-    backend = "https://chat.openai.com/backend-api",
-    timeout = 60_000,
+    backend = CHATGPT_BACKEND,
+    timeout = CHATGPT_TIMEOUT,
 ): Promise<NodeJS.ReadableStream> {
     const headers = make_headers(token);
     headers.set("Accept", "text/event-stream");
