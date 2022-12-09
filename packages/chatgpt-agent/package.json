@@ -1,6 +1,6 @@
 {
     "name": "chatgpt-agent",
-    "version": "1.2.1",
+    "version": "1.3.0",
     "description": "Client for the unofficial ChatGPT API with progressive responses and more.",
     "keywords": [
         "ChatGPT",
