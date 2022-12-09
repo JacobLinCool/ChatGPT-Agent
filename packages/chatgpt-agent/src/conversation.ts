@@ -12,6 +12,14 @@ export class Conversation extends EventEmitter {
     }
 
     public async run(): Promise<string> {
+        if (this.session.agent.validate() === false) {
+            try {
+                await this.session.agent.refresh();
+            } catch (err) {
+                this.emit("error", err as Error);
+            }
+        }
+
         const result = await this.converse().catch((err) => (this.emit("error", err), ""));
         log("Conversation Result", result);
         return result;
