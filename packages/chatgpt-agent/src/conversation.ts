@@ -65,6 +65,7 @@ export class Conversation extends EventEmitter {
                     id: last?.message.id,
                     author: "assistant",
                     message: response,
+                    conversation: this,
                 });
                 this.session.rename(last?.conversation_id);
                 this.emit("complete", response);
