@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import fetch, { Headers } from "node-fetch";
 import { log } from "./debug";
-import { CHATGPT_BACKEND, CHATGPT_TIMEOUT } from "./config";
+import { CHATGPT_BACKEND, CHATGPT_TIMEOUT, CHATGPT_RETRY } from "./config";
 
 export function make_headers(token?: string): Headers {
     const headers = new Headers();
@@ -25,40 +25,51 @@ export async function moderate(
     const headers = make_headers(token);
     log(headers);
 
-    const controller = new AbortController();
-    const timeout_id = setTimeout(() => controller.abort(), timeout);
-
-    const res = await fetch(`${backend}/moderations`, {
-        headers,
-        body: JSON.stringify({
-            input,
-            model: "text-moderation-playground",
-        }),
-        method: "POST",
-        // @ts-expect-error signal should be compatible with AbortSignal
-        signal: controller.signal,
-    });
-    clearTimeout(timeout_id);
-
-    if (controller.signal.aborted) {
-        throw new Error("Request timed out");
-    }
-
-    log("sent moderation request", res.status);
-    if (res.status !== 200) {
+    for (let i = 0; i <= CHATGPT_RETRY; i++) {
         try {
-            const data = await res.clone().json();
-            log("moderation error", data);
-            throw new Error(data?.error);
-        } catch {
-            const text = await res.clone().text();
-            log("moderation error", text);
-            throw new Error(text);
+            const controller = new AbortController();
+            const timeout_id = setTimeout(() => controller.abort(), timeout);
+
+            const res = await fetch(`${backend}/moderations`, {
+                headers,
+                body: JSON.stringify({
+                    input,
+                    model: "text-moderation-playground",
+                }),
+                method: "POST",
+                // @ts-expect-error signal should be compatible with AbortSignal
+                signal: controller.signal,
+            });
+            clearTimeout(timeout_id);
+
+            if (controller.signal.aborted) {
+                throw new Error("Request timed out");
+            }
+
+            log("sent moderation request", res.status);
+            if (res.status !== 200) {
+                try {
+                    const data = await res.clone().json();
+                    log("moderation error", data);
+                    throw new Error(data?.error);
+                } catch {
+                    const text = await res.clone().text();
+                    log("moderation error", text);
+                    throw new Error(text);
+                }
+            }
+
+            const data = await res.json();
+            return data;
+        } catch (err) {
+            if (i === CHATGPT_RETRY - 1) {
+                throw err;
+            }
+            log("retrying moderation request", i + 1);
         }
     }
 
-    const data = await res.json();
-    return data;
+    throw new Error("Failed to moderate");
 }
 
 export async function converse(
@@ -73,54 +84,66 @@ export async function converse(
     headers.set("Accept", "text/event-stream");
     log(headers);
 
-    const controller = new AbortController();
-    const timeout_id = setTimeout(() => controller.abort(), timeout);
-
-    const res = await fetch(`${backend}/conversation`, {
-        headers,
-        body: JSON.stringify({
-            action: "next",
-            messages: [
-                {
-                    id: randomUUID(),
-                    role: "user",
-                    content: { content_type: "text", parts: [content] },
-                },
-            ],
-            parent_message_id: parent_id || randomUUID(),
-            conversation_id,
-            model: "text-davinci-002-render",
-        }),
-        method: "POST",
-        // @ts-expect-error signal should be compatible with AbortSignal
-        signal: controller.signal,
-    });
-    clearTimeout(timeout_id);
-
-    if (controller.signal.aborted) {
-        throw new Error("Request timed out");
-    }
-
-    log("sent conversation request", res.status);
-    if (res.status !== 200) {
+    for (let i = 0; i <= CHATGPT_RETRY; i++) {
         try {
-            const data = await res.clone().json();
-            log("conversation error", data);
-            throw new Error(data?.error?.detail);
-        } catch {
-            const text = await res.clone().text();
-            log("conversation error", text);
-            throw new Error(text);
+            const controller = new AbortController();
+            const timeout_id = setTimeout(() => controller.abort(), timeout);
+
+            const res = await fetch(`${backend}/conversation`, {
+                headers,
+                body: JSON.stringify({
+                    action: "next",
+                    messages: [
+                        {
+                            id: randomUUID(),
+                            role: "user",
+                            content: { content_type: "text", parts: [content] },
+                        },
+                    ],
+                    parent_message_id: parent_id || randomUUID(),
+                    conversation_id,
+                    model: "text-davinci-002-render",
+                }),
+                method: "POST",
+                // @ts-expect-error signal should be compatible with AbortSignal
+                signal: controller.signal,
+            });
+            clearTimeout(timeout_id);
+
+            if (controller.signal.aborted) {
+                throw new Error("Request timed out");
+            }
+
+            log("sent conversation request", res.status);
+            if (res.status !== 200) {
+                try {
+                    const data = await res.clone().json();
+                    log("conversation error", data);
+                    throw new Error(data?.error?.detail);
+                } catch {
+                    const text = await res.clone().text();
+                    log("conversation error", text);
+                    throw new Error(text);
+                }
+            }
+
+            return res.body;
+        } catch (err) {
+            if (i === CHATGPT_RETRY - 1) {
+                throw err;
+            }
+            log("retrying conversation request", i + 1);
         }
     }
 
-    return res.body;
+    throw new Error("Failed to converse");
 }
 
 export async function refresh(refresh_token: string): Promise<string | undefined> {
     const headers = make_headers();
     headers.set("Cookie", `__Secure-next-auth.session-token=${refresh_token}`);
     log(headers);
+
     const res = await fetch("https://chat.openai.com/api/auth/session", {
         headers,
     });
