@@ -12,7 +12,16 @@ And you can invite the Discord bot to your server with [this link](https://disco
 
 ## The Library
 
-[Usage](#usage) | [Configuration](#configuration)
+[Features](#features) | [Usage](#usage) | [Configuration](#configuration)
+
+### Features
+
+- Progressive responses
+- Multiple sessions
+- Conversation history
+- Automatic token refresh
+- Request timeout
+- Request retry
 
 ### Usage
 
@@ -60,4 +69,5 @@ You can also configure them using environment variables.
 ```sh
 CHATGPT_BACKEND="https://chat.openai.com/backend-api"
 CHATGPT_TIMEOUT=60000
+CHATGPT_RETRY=1
 ```
