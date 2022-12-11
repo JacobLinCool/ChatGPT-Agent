@@ -50,12 +50,11 @@ export class Agent extends EventEmitter {
             throw new Error("No refresh token");
         }
 
-        const token = await refresh(this.refresh_token);
-        if (!token) {
-            throw new Error("Failed to refresh token");
-        }
+        const result = await refresh(this.refresh_token);
 
-        this.token = token;
+        this.token = result.token;
+        this.refresh_token = result.refresh;
+        this.emit("refresh", result);
     }
 
     /**
@@ -79,5 +78,20 @@ export class Agent extends EventEmitter {
         } catch {
             return false;
         }
+    }
+
+    public on(event: "refresh", listener: (data: { token: string; refresh: string }) => void): this;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public on(event: string, listener: (...args: any[]) => void): this {
+        return super.on(event, listener);
+    }
+
+    public off(
+        event: "refresh",
+        listener: (data: { token: string; refresh: string }) => void,
+    ): this;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public off(event: string, listener: (...args: any[]) => void): this {
+        return super.off(event, listener);
     }
 }

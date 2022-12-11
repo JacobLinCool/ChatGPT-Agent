@@ -150,7 +150,7 @@ export async function converse(
     throw new Error("Failed to converse");
 }
 
-export async function refresh(refresh_token: string): Promise<string | undefined> {
+export async function refresh(refresh_token: string): Promise<{ token: string; refresh: string }> {
     const headers = make_headers();
     headers.set("Cookie", `__Secure-next-auth.session-token=${refresh_token}`);
     log(headers);
@@ -161,7 +161,7 @@ export async function refresh(refresh_token: string): Promise<string | undefined
         try {
             const data = await res.clone().json();
             log("refresh error", data);
-            throw new Error(data?.error?.detail);
+            throw new Error(data?.error);
         } catch {
             const text = await res.clone().text();
             log("refresh error", text);
@@ -170,8 +170,22 @@ export async function refresh(refresh_token: string): Promise<string | undefined
     }
 
     const data = await res.json();
+    if (data?.error) {
+        throw new Error(data.error);
+    }
+
+    const new_refresh_token = res.headers.get("set-cookie")?.split(";")[0];
+    const refresh = new_refresh_token?.split("=")[1];
+
     if (data?.accessToken) {
-        return data.accessToken;
+        const new_refresh_token = res.headers.get("set-cookie")?.split(";")[0];
+        if (new_refresh_token) {
+            log("refreshed refresh token", new_refresh_token);
+        }
+        return {
+            token: data.accessToken,
+            refresh: refresh || "",
+        };
     } else {
         throw new Error("No access token returned");
     }
