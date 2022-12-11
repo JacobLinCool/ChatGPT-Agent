@@ -3,6 +3,8 @@ import type { Session } from "./session";
 import { converse } from "./request";
 import { log } from "./debug";
 
+const verbose = log.extend("verbose");
+
 export class Conversation extends EventEmitter {
     /**
      * The response of the conversation, resolved when the conversation is complete.
@@ -47,7 +49,7 @@ export class Conversation extends EventEmitter {
                 const split = data.indexOf("\n\n");
                 if (split !== -1) {
                     const part = data.slice(0, split).replace(/^data: /, "");
-                    log("Partially Received", part);
+                    verbose("Partially Received", part);
                     if (part.startsWith("[DONE]")) {
                         return;
                     }
